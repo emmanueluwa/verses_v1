@@ -1,8 +1,10 @@
-# AI-Powered Quran Verse Recommender (Weeks 1-2)
+# AI-Powered Quran Verse Recommender
 
 ## Purpose Of Project
 
-- Input mood/situation → get relevant Quran verses with context
+- Input mood/situation
+  → get relevant Quran verses with context
+  → get explanation of Quran verses
 - Option to play audio of Quran verse
 
 ## Tools used
@@ -11,4 +13,4 @@
 
 ## Tech stack
 
-- Python, LangChain, Pinecone/Chroma, HTML, CSS, Javascript
+- Python, LangChain, Pinecone, HTML, CSS, Javascript
