@@ -27,7 +27,7 @@ if __name__ == "__main__":
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
 
-    query = "Best verse for when feeling sad?"
+    query = "I am feeling sad"
     chain = PromptTemplate.from_template(template=query) | llm
 
     vectorstore = PineconeVectorStore(
@@ -44,21 +44,28 @@ if __name__ == "__main__":
 
     result = retrieval_chain.invoke(input={"input": query})
 
-    # print(result)
+    print(result)
 
-    template = """Use the following pieces of context to respond the question at the end.
-    Respond with a quran verse and an explanation of the verse using the text.
-    You are a quran verse recommender.
-    
-    If you don't know the answer, just say that you don't know, dont't try to make up an answer.
-    Use three sentences maximum and keep the answer as concise as possible.
-    Always say "Allah knows best" at the end of the answer.
+    template = """You are a Quran verse recommender using Tafsir Ibn Kathir.
 
+    Use ONLY the information provided in the context below. Do not add interpretations or explanations that are not in the text.
+
+    Provide:
+    1. The verse reference (Surah:Ayah)
+    2. The verse text (if available in context)
+    3. The explanation from Tafsir Ibn Kathir
+
+    If the context doesn't contain relevant information, say "I couldn't find relevant verses in the provided tafsir for this situation."
+
+    Keep your answer concise and faithful to the source text.
+    Always end with "Allah knows best."
+
+    Context from Tafsir Ibn Kathir:
     {context}
 
     Question: {question}
 
-    Helpful Answer:"""
+    Answer (use only the context provided):"""
 
     custom_rag_prompt = PromptTemplate.from_template(template)
 
