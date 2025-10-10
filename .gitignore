@@ -88,3 +88,5 @@ data/*.csv
 .mypy_cache/
 .pyre/
 .pytype/
+
+design_document.md

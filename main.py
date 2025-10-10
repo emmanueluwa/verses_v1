@@ -44,9 +44,14 @@ if __name__ == "__main__":
 
     result = retrieval_chain.invoke(input={"input": query})
 
-    print(result)
+    print(f"result: {result}")
+
+    print("\n\n")
 
     template = """You are a Quran verse recommender using Tafsir Ibn Kathir.
+
+    Based on the users question, find an explanation from the text that relates to it. For example of the question is about "poverty", return the explanation
+    and verse related to do with how to response to financial lack/worry. Then explain how this is relevant to the users question.
 
     Use ONLY the information provided in the context below. Do not add interpretations or explanations that are not in the text.
 
@@ -79,4 +84,4 @@ if __name__ == "__main__":
     )
 
     res = rag_chain.invoke(query)
-    print(res)
+    print(f"rag chain result: {res}")
