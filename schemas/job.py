@@ -8,7 +8,7 @@ class VerseJobBase(BaseModel):
 
 
 class VerseJobResponse(BaseModel):
-    job_id: int
+    job_id: str
     status: str
     created_at: datetime
     verse_id: Optional[int] = None

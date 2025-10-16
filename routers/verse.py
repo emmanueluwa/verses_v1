@@ -84,7 +84,7 @@ def generate_verse_task(job_id: str, theme: str, session_id: str):
         db.close()
 
 
-@router.get("/{verse_id}/complete", repsonse_model=CompleteVerseNodeResponse)
+@router.get("/{verse_id}/complete", response_model=CompleteVerseNodeResponse)
 def get_complete_verse(verse_id: int, db: Session = Depends(get_db)):
 
     verse = db.query(Verse).filter(Verse.id == verse_id).first()

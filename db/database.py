@@ -4,7 +4,7 @@ from sqlalchemy.ext.declarative import declarative_base
 
 from core.config import settings
 
-engine = create_engine(settings.DATBASE_URL)
+engine = create_engine(settings.DATABASE_URL)
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
@@ -21,5 +21,5 @@ def get_db():
         db.close()
 
 
-def create_table():
+def create_tables():
     Base.metadata.create_all(bind=engine)
