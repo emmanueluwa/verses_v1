@@ -82,3 +82,19 @@ def generate_verse_task(job_id: str, theme: str, session_id: str):
 
     finally:
         db.close()
+
+
+@router.get("/{verse_id}/complete", repsonse_model=CompleteVerseNodeResponse)
+def get_complete_verse(verse_id: int, db: Session = Depends(get_db)):
+
+    verse = db.query(Verse).filter(Verse.id == verse_id).first()
+    if not verse:
+        raise HTTPException(status_code=404, detail="Verse not found")
+
+    complete_verse = build_complete_verse_tree(db, verse)
+
+    return complete_verse
+
+
+def build_complete_verse_tree(db: Session, verse: Verse) -> CompleteVerseNodeResponse:
+    pass
