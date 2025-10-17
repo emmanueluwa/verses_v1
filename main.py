@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from core.config import settings
-from routers import job, verse
+from routers import verse
 from db.database import create_tables
 
 create_tables()
@@ -25,7 +25,6 @@ app.add_middleware(
 )
 
 app.include_router(verse.router, prefix=settings.API_PREFIX)
-app.include_router(job.router, prefix=settings.API_PREFIX)
 
 
 if __name__ == "__main__":

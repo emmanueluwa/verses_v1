@@ -5,14 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Cookie, Response, Backgro
 from sqlalchemy.orm import Session
 
 from db.database import get_db, SessionLocal
-from models.verse import Verse, VerseNode
-from models.job import VerseJob
-from schemas.verse import (
-    CompleteVerseResponse,
-    CompleteVerseNodeResponse,
-    CreateVerseRequest,
-)
-from schemas.job import VerseJobResponse
+from models.verse import Verse
+from schemas.verse import VerseLLMResponse, BookmarkRequest, QueryRequest
+from services.verse_service import get_verse_recommendation, get_verse_by_reference
 
 router = APIRouter(prefix="/verses", tags=["verses"])
 
@@ -24,10 +19,9 @@ def get_session_id(session_id: Optional[str] = Cookie(None)):
     return session_id
 
 
-@router.post("/create", response_model=VerseJobResponse)
-def create_story(
-    request: CreateVerseRequest,
-    background_tasks: BackgroundTasks,
+@router.post("/query", response_model=VerseLLMResponse)
+async def query_verses(
+    request: QueryRequest,
     response: Response,
     session_id: str = Depends(get_session_id),
     db: Session = Depends(get_db),
@@ -35,66 +29,26 @@ def create_story(
     # identifying users based on web browser instance instead of auth
     response.set_cookie(key="session_id", value=session_id, httponly=True)
 
-    # job triggers background task to call llm
-    job_id = str(uuid.uuid4())
-
-    job = VerseJob(
-        job_id=job_id, session_id=session_id, theme=request.theme, status="pending"
-    )
-
-    db.add(job)
-    db.commit()
-
-    # add background taks. generate verse
-    background_tasks.add_task(
-        generate_verse_task, job_id=job_id, theme=request.theme, session_id=session_id
-    )
-
-    return job
-
-
-def generate_verse_task(job_id: str, theme: str, session_id: str):
-    # new db instance, seperate session started to avoid hanging -> threading and async operations
-    db = SessionLocal()
-
     try:
-        job = db.query(VerseJob).filter(VerseJob.job_id == job_id).first()
+        result = await get_verse_recommendations(request.question, request.max_results)
 
-        if not job:
-            return
+        return result
 
-        try:
-            job.status = "processing"
-            db.commit()
-
-            verse = {}  # TODO: generate story
-
-            job.verse_id = 1  # TODO: update story id
-            job.status = "completed"
-            job.completed_at = datetime.now()
-            db.commit()
-
-        except Exception as e:
-            job.status = "failed"
-            job.completed_at = datetime.now()
-            job.error = str(e)
-            db.commit()
-
-    finally:
-        db.close()
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
 
 
-@router.get("/{verse_id}/complete", response_model=CompleteVerseNodeResponse)
-def get_complete_verse(verse_id: int, db: Session = Depends(get_db)):
+@router.post("/bookmarks/save")
+async def save_bookmark(
+    request: BookmarkRequest,
+    session_id: str = Depends(get_session_id),
+    db: Session = Depends(get_db),
+):
+    existing = db.query(Verse).filter(
+        Verse.session_id == session_id,
+        Verse.verse_reference == request.verse_reference,
+    )
+    if existing:
+        raise HTTPException(status_Code=400, detail="Verse already bookmarked")
 
-    verse = db.query(Verse).filter(Verse.id == verse_id).first()
-    if not verse:
-        raise HTTPException(status_code=404, detail="Verse not found")
-
-    complete_verse = build_complete_verse_tree(db, verse)
-
-    return complete_verse
-
-
-def build_complete_verse_tree(db: Session, verse: Verse) -> CompleteVerseNodeResponse:
-    pass
+    verse_data = get_verse_by_reference(request.verse_reference)

@@ -9,6 +9,8 @@ from db.database import Base
 
 
 class Verse:
+    """Tack verses users save/bookmark"""
+
     __tablename__ = "verses"
 
     id = Column(Integer, primary_key=True, index=True)
@@ -17,17 +19,14 @@ class Verse:
     session_id = Column(String, index=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
-    nodes = relationship("VerseNode", back_populates="verse")
 
+class QueryLog:
+    """Track what users are asking"""
 
-class VerseNode:
-    __tablename__ = "verse_nodes"
+    __tablename__ = "query_logs"
 
     id = Column(Integer, primary_key=True, index=True)
-    verse_id = Column(Integer, ForeignKey("verses.id"), index=True)
-
-    text = Column(String, index=True)
-    explanation = Column(String, index=True)
-    related_verses = Column(JSON, default=list)
-
-    verse = relationship("Verse", back_populates="nodes")
+    session_id = Column(String, index=True)
+    user_query = Column(String, index=True)
+    verses_returned = Column(String)
+    created_at = Column(DateTime(timezone=True), server_default=func.now())

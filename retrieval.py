@@ -7,6 +7,9 @@ from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain.chains.retrieval import create_retrieval_chain
 from langchain_core.runnables import RunnablePassthrough
 
+from langchain_core.output_parsers import PydanticOutputParser
+from core.models import VerseLLMResponse
+
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -16,7 +19,7 @@ def format_docs(docs):
     return "\n\n".join(doc.page_content for doc in docs)
 
 
-if __name__ == "__main__":
+def retrieval_call(query):
     print("retrieving :)")
 
     embeddings = OpenAIEmbeddings(model="text-embedding-3-small")
@@ -26,9 +29,6 @@ if __name__ == "__main__":
         model="gpt-4o-mini",
         api_key=os.environ.get("OPENAI_API_KEY"),
     )
-
-    query = "I am feeling sad"
-    chain = PromptTemplate.from_template(template=query) | llm
 
     vectorstore = PineconeVectorStore(
         index_name=os.environ["INDEX_NAME"], embedding=embeddings
@@ -43,10 +43,6 @@ if __name__ == "__main__":
     )
 
     result = retrieval_chain.invoke(input={"input": query})
-
-    print(f"result: {result}")
-
-    print("\n\n")
 
     template = """You are a Quran verse recommender using Tafsir Ibn Kathir.
 
@@ -65,6 +61,9 @@ if __name__ == "__main__":
     Keep your answer concise and faithful to the source text.
     Always end with "Allah knows best."
 
+    Provide your answer in the following JSON format:
+    {format_instructions}
+
     Context from Tafsir Ibn Kathir:
     {context}
 
@@ -72,7 +71,14 @@ if __name__ == "__main__":
 
     Answer (use only the context provided):"""
 
-    custom_rag_prompt = PromptTemplate.from_template(template)
+    query_response_parser = PydanticOutputParser(pydantic_object=VerseLLMResponse)
+
+    custom_rag_prompt = PromptTemplate.from_template(
+        template=template,
+        partial_variables={
+            "format_instructions": query_response_parser.get_format_instructions()
+        },
+    )
 
     rag_chain = (
         {
@@ -81,7 +87,14 @@ if __name__ == "__main__":
         }
         | custom_rag_prompt
         | llm
+        | query_response_parser
     )
 
     res = rag_chain.invoke(query)
-    print(f"rag chain result: {res}")
+
+    return res
+
+
+if __name__ == "__main__":
+    result = retrieval_call("I am feeling sad")
+    print(result)
