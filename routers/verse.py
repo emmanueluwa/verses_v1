@@ -1,12 +1,11 @@
 import uuid
-from typing import Optional
-from datetime import datetime
+from typing import Optional, List
 from fastapi import APIRouter, Depends, HTTPException, Cookie, Response, BackgroundTasks
 from sqlalchemy.orm import Session
 
 from db.database import get_db, SessionLocal
 from models.verse import Verse
-from schemas.verse import VerseLLMResponse, BookmarkRequest, QueryRequest
+from schemas.verse import VerseLLMResponse, BookmarkRequest, QueryRequest, VersesHistory
 
 from core.verse_generator import VerseGenerator
 from core.verses import Verses
@@ -44,7 +43,7 @@ async def query_verses(
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
 
 
-@router.get("/query_responses")
+@router.get("/query_responses", response_model=List[VersesHistory])
 async def get_responses(
     response: Response,
     session_id: str = Depends(get_session_id),

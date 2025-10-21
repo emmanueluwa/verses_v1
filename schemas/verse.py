@@ -48,8 +48,19 @@ class VerseLLMResponse(BaseModel):
     query: str
     answer_summary: str
     recommendations: List[VerseRecommendation]
-    themes_identitfied: List[str]
+    themes_identified: List[str]
     timestamp: datetime
+
+
+class VersesHistory(BaseModel):
+    user_query: str
+    answer_summary: str
+    verses_returned: str
+    themes: str
+    created_at: datetime
+
+    class Config:
+        from_attributes = True
 
 
 class SavedVerse(BaseModel):
