@@ -7,7 +7,10 @@ from sqlalchemy.orm import Session
 from db.database import get_db, SessionLocal
 from models.verse import Verse
 from schemas.verse import VerseLLMResponse, BookmarkRequest, QueryRequest
-from services.verse_service import get_verse_recommendation, get_verse_by_reference
+
+from core.verse_generator import VerseGenerator
+
+# from services.verse_service import get_verse_recommendation, get_verse_by_reference
 
 router = APIRouter(prefix="/verses", tags=["verses"])
 
@@ -30,7 +33,9 @@ async def query_verses(
     response.set_cookie(key="session_id", value=session_id, httponly=True)
 
     try:
-        result = await get_verse_recommendations(request.question, request.max_results)
+        result = VerseGenerator.query_verse(
+            db=db, session_id=session_id, query=request.query
+        )
 
         return result
 
@@ -44,11 +49,28 @@ async def save_bookmark(
     session_id: str = Depends(get_session_id),
     db: Session = Depends(get_db),
 ):
-    existing = db.query(Verse).filter(
-        Verse.session_id == session_id,
-        Verse.verse_reference == request.verse_reference,
+    existing = (
+        db.query(Verse)
+        .filter(
+            Verse.session_id == session_id,
+            Verse.verse_reference == request.verse_reference,
+        )
+        .first()
     )
     if existing:
         raise HTTPException(status_Code=400, detail="Verse already bookmarked")
 
-    verse_data = get_verse_by_reference(request.verse_reference)
+    saved_verse = Verse(
+        session_id=session_id,
+        verse_reference=request.verse_reference,
+        surah_name=request.surah_name,
+        verse_number=request.verse_number,
+        arabic_text=request.arabic_text,
+        translation=request.translation,
+    )
+
+    db.add(saved_verse)
+    db.commit()
+    db.refresh(saved_verse)
+
+    return {"message": "Verse bookmarked successfully", "id": saved_verse.id}

@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 from langchain_core.prompts import PromptTemplate
 from langchain_openai import OpenAIEmbeddings, ChatOpenAI
 from langchain_pinecone import PineconeVectorStore
@@ -92,9 +93,10 @@ def retrieval_call(query):
 
     res = rag_chain.invoke(query)
 
+    # res.timestamp = datetime.now()
+
     return res
 
 
 if __name__ == "__main__":
     result = retrieval_call("I am feeling sad")
-    print(result)

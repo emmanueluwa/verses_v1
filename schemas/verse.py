@@ -9,7 +9,7 @@ from pydantic import BaseModel, Field
 
 
 class QueryRequest(BaseModel):
-    question: str = Field(min_length=3, description="User's question")
+    query: str = Field(min_length=3, description="User's question")
     max_results: Optional[int] = Field(
         Default=3, description="Number of verse recommendations"
     )
@@ -48,7 +48,7 @@ class VerseLLMResponse(BaseModel):
     query: str
     answer_summary: str
     recommendations: List[VerseRecommendation]
-    themes_identitfied: List[str]
+    themes_identified: List[str]
     timestamp: datetime
 
 

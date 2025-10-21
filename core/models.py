@@ -1,5 +1,6 @@
 from typing import List, Optional
 from pydantic import BaseModel, Field
+from datetime import datetime
 
 
 class VerseReference(BaseModel):
@@ -34,3 +35,4 @@ class VerseLLMResponse(BaseModel):
     themes_identified: List[str] = Field(
         description="Islamic themes identified from the query"
     )
+    timestamp: datetime = Field(description="Time response was created")
