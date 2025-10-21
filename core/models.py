@@ -36,3 +36,10 @@ class VerseLLMResponse(BaseModel):
         description="Islamic themes identified from the query"
     )
     timestamp: datetime = Field(description="Time response was created")
+
+
+class VerseHistory(BaseModel):
+    query: str = Field(description="The users's original question")
+    answer_summary: str = Field(description="Brief summary answer to the query")
+    verses_returned: str = Field(description="Verses returned based on user query")
+    themes: str = Field(description="Theme of users query")

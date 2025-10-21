@@ -48,7 +48,7 @@ class VerseLLMResponse(BaseModel):
     query: str
     answer_summary: str
     recommendations: List[VerseRecommendation]
-    themes_identified: List[str]
+    themes_identitfied: List[str]
     timestamp: datetime
 
 

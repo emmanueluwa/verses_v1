@@ -9,6 +9,7 @@ from models.verse import Verse
 from schemas.verse import VerseLLMResponse, BookmarkRequest, QueryRequest
 
 from core.verse_generator import VerseGenerator
+from core.verses import Verses
 
 # from services.verse_service import get_verse_recommendation, get_verse_by_reference
 
@@ -41,6 +42,23 @@ async def query_verses(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error processing query: {str(e)}")
+
+
+@router.get("/query_responses")
+async def get_responses(
+    response: Response,
+    session_id: str = Depends(get_session_id),
+    db: Session = Depends(get_db),
+):
+    response.set_cookie(key="session_id", value=session_id, httponly=True)
+
+    try:
+        verses = Verses.get_verses(db=db, session_id=session_id)
+
+        return verses
+
+    except Exception as e:
+        raise
 
 
 @router.post("/bookmarks/save")

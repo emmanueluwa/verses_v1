@@ -93,8 +93,6 @@ def retrieval_call(query):
 
     res = rag_chain.invoke(query)
 
-    # res.timestamp = datetime.now()
-
     return res
 
 
