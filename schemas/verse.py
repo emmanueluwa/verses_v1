@@ -1,5 +1,5 @@
 """
-specifying type of data api should accept and return
+Purpose: specifying type of data api should accept and return
 - fast api(pydantic) will auto validate data
 """
 
@@ -19,37 +19,37 @@ class BookmarkRequest(BaseModel):
     verse_reference: str
 
 
-class VerseReference(BaseModel):
-    surah_number: int
-    surah_name: str
-    verse_number: int
-    arabic_text: str
-    translation: str
-    recitation_url: Optional[str] = None
+# class VerseReference(BaseModel):
+#     surah_number: int
+#     surah_name: str
+#     verse_number: int
+#     arabic_text: str
+#     translation: str
+#     recitation_url: Optional[str] = None
 
-    class Config:
-        from_attributes = True
-
-
-class TafsirExplanation(BaseModel):
-    """Tafsir explanation from Ibn Kathir"""
-
-    content: str
-    source: str = "Tafsir Ibn Kathir"
+#     class Config:
+#         from_attributes = True
 
 
-class VerseRecommendation(BaseModel):
-    verse: VerseReference
-    tafsir: TafsirExplanation
-    why_recommended: str = Field(description="Why this verse answers the question")
+# class TafsirExplanation(BaseModel):
+#     """Tafsir explanation from Ibn Kathir"""
+
+#     content: str
+#     source: str = "Tafsir Ibn Kathir"
 
 
-class VerseLLMResponse(BaseModel):
-    query: str
-    answer_summary: str
-    recommendations: List[VerseRecommendation]
-    themes_identified: List[str]
-    timestamp: datetime
+# class VerseRecommendation(BaseModel):
+#     verse: VerseReference
+#     tafsir: TafsirExplanation
+#     why_recommended: str = Field(description="Why this verse answers the question")
+
+
+# class VerseLLMResponse(BaseModel):
+#     query: str
+#     answer_summary: str
+#     recommendations: List[VerseRecommendation]
+#     themes_identified: List[str]
+#     timestamp: datetime
 
 
 class VersesHistory(BaseModel):
@@ -58,6 +58,7 @@ class VersesHistory(BaseModel):
     verses_returned: str
     themes: str
     created_at: datetime
+    id: int
 
     class Config:
         from_attributes = True
@@ -65,7 +66,7 @@ class VersesHistory(BaseModel):
 
 class SavedVerse(BaseModel):
     id: int
-    verse_reference: set
+    verse_reference: str
     surah_name: str
     verse_number: int
     arabic_text: str

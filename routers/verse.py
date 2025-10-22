@@ -5,10 +5,11 @@ from sqlalchemy.orm import Session
 
 from db.database import get_db, SessionLocal
 from models.verse import Verse
-from schemas.verse import VerseLLMResponse, BookmarkRequest, QueryRequest, VersesHistory
+from schemas.verse import BookmarkRequest, QueryRequest, VersesHistory
 
 from core.verse_generator import VerseGenerator
 from core.verses import Verses
+from core.models import VerseLLMResponse
 
 # from services.verse_service import get_verse_recommendation, get_verse_by_reference
 
@@ -51,13 +52,35 @@ async def get_responses(
 ):
     response.set_cookie(key="session_id", value=session_id, httponly=True)
 
-    try:
-        verses = Verses.get_verses(db=db, session_id=session_id)
+    verses = Verses.get_verses(db=db, session_id=session_id)
+    if not verses:
+        raise HTTPException(
+            status_code=404,
+            detail=f"no verses found found",
+        )
 
-        return verses
+    return verses
 
-    except Exception as e:
-        raise
+
+@router.get("/query_response/{query_response_id}", response_model=VersesHistory)
+async def get_responses(
+    response: Response,
+    query_response_id: int,
+    session_id: str = Depends(get_session_id),
+    db: Session = Depends(get_db),
+):
+    response.set_cookie(key="session_id", value=session_id, httponly=True)
+
+    verse = Verses.get_verse(
+        db=db, session_id=session_id, query_response_id=query_response_id
+    )
+    if not verse:
+        raise HTTPException(
+            status_code=404,
+            detail=f"query response with id: {query_response_id} not found",
+        )
+
+    return verse
 
 
 @router.post("/bookmarks/save")
