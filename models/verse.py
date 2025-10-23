@@ -1,7 +1,7 @@
 # reference (Surah:Ayah)
 # text
 # explanation
-from sqlalchemy import Column, Integer, String, DateTime, Text
+from sqlalchemy import Column, ForeignKey, Integer, String, DateTime, Text
 from sqlalchemy.sql import func
 from sqlalchemy.orm import relationship
 
@@ -13,10 +13,10 @@ class Verse(Base):
 
     __tablename__ = "verses"
 
-    id = Column(Integer, primary_key=True, index=True)
-    reference = Column(String, index=True)
-
     session_id = Column(String, index=True)
+    query_log_id = Column(
+        Integer, ForeignKey("query_logs.id", ondelete="CASCADE"), primary_key=True
+    )
     created_at = Column(DateTime(timezone=True), server_default=func.now())
 
 
