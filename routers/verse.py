@@ -61,7 +61,7 @@ async def get_responses(
 
 
 @router.get("/query_response/{query_response_id}", response_model=VersesHistory)
-async def get_responses(
+async def get_response(
     response: Response,
     query_response_id: int,
     session_id: str = Depends(get_session_id),

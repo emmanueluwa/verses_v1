@@ -12,10 +12,9 @@ from fastapi import (
 from sqlalchemy.orm import Session
 
 from db.database import get_db, SessionLocal
-from models.verse import Verse
-from schemas.verse import Bookmark
+from models.verse import QueryLog, Verse
+from schemas.verse import Bookmark, VersesHistory
 from core.verse_generator import VerseGenerator
-from core.verses import Verses
 from core.models import VerseLLMResponse
 
 router = APIRouter(prefix="/bookmark", tags=["bookmark"])
@@ -34,11 +33,14 @@ def bookmark(
     db: Session = Depends(get_db),
     session_id=Depends(get_session_id),
 ):
-    verse = db.query(Verse).filter(Verse.query_log_id == bookmark.query_log_id).first()
-    if not verse:
+    query_response = (
+        db.query(QueryLog).filter(QueryLog.id == bookmark.query_log_id).first()
+    )
+    print(f"verse from bookmark router: {query_response}")
+    if not query_response:
         raise HTTPException(
             status_code=404,
-            detail=f"verse with id: {bookmark.query_log_id} does not exist",
+            detail=f"query response with id: {bookmark.query_log_id} does not exist",
         )
 
     bookmark_query = db.query(Verse).filter(
@@ -64,3 +66,21 @@ def bookmark(
         db.commit()
 
         return {"message": "successfully deleted bookmark"}
+
+
+@router.get(
+    "/saved",
+    status_code=status.HTTP_200_OK,
+)
+def bookmark(
+    db: Session = Depends(get_db),
+    session_id=Depends(get_session_id),
+):
+    bookmarked_responses = db.query(Verse).filter(Verse.session_id == session_id).all()
+    if not bookmarked_responses:
+        raise HTTPException(
+            status_code=404,
+            detail=f"bookmarked verses for id: {session_id} do not exist",
+        )
+
+    return bookmarked_responses
