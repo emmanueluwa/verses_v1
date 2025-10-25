@@ -36,7 +36,6 @@ def bookmark(
     query_response = (
         db.query(QueryLog).filter(QueryLog.id == bookmark.query_log_id).first()
     )
-    print(f"verse from bookmark router: {query_response}")
     if not query_response:
         raise HTTPException(
             status_code=404,
@@ -69,18 +68,18 @@ def bookmark(
 
 
 @router.get(
-    "/saved",
-    status_code=status.HTTP_200_OK,
+    "/saved", status_code=status.HTTP_200_OK, response_model=List[VersesHistory]
 )
 def bookmark(
     db: Session = Depends(get_db),
     session_id=Depends(get_session_id),
 ):
-    bookmarked_responses = db.query(Verse).filter(Verse.session_id == session_id).all()
-    if not bookmarked_responses:
-        raise HTTPException(
-            status_code=404,
-            detail=f"bookmarked verses for id: {session_id} do not exist",
-        )
+
+    bookmarked_responses = (
+        db.query(QueryLog)
+        .join(Verse, Verse.query_log_id == QueryLog.id)
+        .filter(Verse.session_id == session_id)
+        .all()
+    )
 
     return bookmarked_responses
