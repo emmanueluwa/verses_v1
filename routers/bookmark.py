@@ -8,6 +8,7 @@ from fastapi import (
     Response,
     status,
     BackgroundTasks,
+    Header,
 )
 from sqlalchemy.orm import Session
 
@@ -25,6 +26,14 @@ def get_session_id(session_id: Optional[str] = Cookie(None)):
         session_id = str(uuid.uuid4())
 
     return session_id
+
+
+# for mobile
+def get_device_id(device_id: Optional[str] = Header(None, alias="X-Device-ID")):
+    if not device_id:
+        raise HTTPException(status_code=400, detail="Device ID required")
+
+    return device_id
 
 
 @router.post("/", status_code=status.HTTP_201_CREATED)
